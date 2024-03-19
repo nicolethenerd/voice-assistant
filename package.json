@@ -1,0 +1,15 @@
+{
+  "name": "voice-assistant",
+  "version": "1.0.0",
+  "description": "A demo project for creating an AI voice assistant using [OpenAI Whisper](https://github.com/openai/whisper) on-device Automatic Speech Recognition, [Picovoice Porcupine](https://github.com/Picovoice/porcupine) Wake Word detection, and [Picovoice Cobra](https://github.com/Picovoice/cobra) Voice Activity Detection.",
+  "main": "web-to-text.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "langchain": "^0.1.28"
+  }
+}

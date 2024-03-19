@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "whisper-voice-assistant"
+name = "voice-assistant"
 version = "0.1.0"
 description = ""
-authors = ["Andy Garbett <atgarbett@gmail.com>"]
+authors = ["Nicole Stein <nicolethenerd@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -17,6 +17,15 @@ torch = "^1.13.1"
 torchaudio = "^0.13.1"
 pvcobra = "^1.2.0"
 python-dotenv = "^0.21.1"
+openai = "^1.13.3"
+selenium = "^4.18.1"
+undetected-chromedriver = "^3.5.5"
+langchain = "^0.1.12"
+langchain-openai = "^0.0.8"
+langchain-community = "^0.0.28"
+openapi-pydantic = "^0.4.0"
+tenacity = "^8.2.3"
+termcolor = "^2.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = {version = "^23.1.0", allow-prereleases = true}

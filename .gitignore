@@ -134,3 +134,6 @@ dmypy.json
 .env
 
 models/*.ppn
+
+node_modules
+playground

@@ -10,21 +10,14 @@ import whisper
 from pvrecorder import PvRecorder
 import torch
 from openai import OpenAI
-from shoprite import add_item_to_cart_by_name
+from speech import stream_to_speakers
+from chat import messages, chat_completion_request, pretty_print_conversation
+from shoprite import shoprite_tools
 
 load_dotenv()
 
 openai_api_key=os.environ.get("OPENAI_API_KEY")
-openai_client = OpenAI(api_key=openai_api_key)
-
-prompt = '''
-You are a voice activated digital assistant. Please respond to the following inquiries in the following way.
-
-When a user says "Add ${ITEM} to my ShopRite cart", respond "API_CALL add_item_to_cart_by_name('${ITEM}')"
-
-Otherwise, proceed normally.
-
-'''
+client = OpenAI(api_key=openai_api_key)
 
 porcupine = pvporcupine.create(
     access_key=os.environ.get("ACCESS_KEY"),
@@ -126,20 +119,20 @@ try:
 
                 recoder.stop()
 
-                completion = openai_client.chat.completions.create(
-                  model="gpt-3.5-turbo",
-                  messages=[
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": transcriber.transcribe(samples)}
-                  ]
-                )
+                messages.append({"role": "user", "content": transcriber.transcribe(samples)})
+                completion = chat_completion_request(messages, tools=shoprite_tools)
+                stream_to_speakers(client, completion.content)
+                print(completion.content)
 
-                content = completion.choices[0].message.content
+                # for line in content.splitlines():
+                #     if (line.startswith("API_CALL")):
+                #         exec("output = " + line.split("API_CALL:")[1])
+                #         print(output)
 
-                for line in content.splitlines():
-                    if (line.startswith("API_CALL")):
-                        exec(line.split(' ')[1])
-
+                #         stream_to_speakers(openai_client, output)
+                #     else:
+                #         print(line)
+                #         stream_to_speakers(openai_client, line)
                 recoder.start()
 except KeyboardInterrupt:
     recoder.stop()
