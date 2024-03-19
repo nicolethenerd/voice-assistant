@@ -2,21 +2,29 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 from tenacity import retry, wait_random_exponential, stop_after_attempt
-from shoprite import shoprite_tools, call_shoprite_function_by_name
-from termcolor import colored  
+from shoprite import call_shoprite_function_by_name
+from termcolor import colored
 import json
 
 load_dotenv()
 
-openai_api_key=os.environ.get("OPENAI_API_KEY")
+openai_api_key = os.environ.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
 GPT_MODEL = "gpt-3.5-turbo"
 
-prompt = '''You are a voice activated digital assistant for ordering groceries. If there is ambiguity about which item a user wants, ask clarifying questions.'''
+prompt: str = '''
+You are a voice activated digital assistant for ordering groceries from ShopRite.
+If there is ambiguity about which item a user wants, ask clarifying questions.
+Do not ask follow up questions after calling a function.
 
-messages = []
-messages.append({"role": "system", "content": prompt})
+After adding an item, if the user clarifies and says they meant a different item, remove the original item and add the new one.
+
+The abbreviation 'oz' should be replaced with 'ounces'.
+'''
+
+messages = [{"role": "system", "content": prompt}]
+
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
 def chat_completion_request(messages, tools=None, tool_choice=None, model=GPT_MODEL):
@@ -31,31 +39,37 @@ def chat_completion_request(messages, tools=None, tool_choice=None, model=GPT_MO
         messages.append(response_message)
 
         if response_message.tool_calls:
-            # Which function call was invoked
-            function_name = response_message.tool_calls[0].function.name
-            
-            # Extracting the arguments
-            function_args  = json.loads(response_message.tool_calls[0].function.arguments)
+            for tool_call in response_message.tool_calls:
+                # Which function call was invoked
+                function_name = tool_call.function.name
 
-            function_response = call_shoprite_function_by_name(function_name, function_args)
+                # Extracting the arguments
+                function_args = json.loads(tool_call.function.arguments)
 
-            messages.append(
-                {"role": "tool", "tool_call_id": response_message.tool_calls[0].id, "name": function_name, "content": function_response}
-            )
+                function_response = call_shoprite_function_by_name(function_name, function_args)
 
-            second_response = client.chat.completions.create(
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": function_name,
+                        "content": function_response
+                    }
+                )
+            response_after_calls = client.chat.completions.create(
                 model=model,
                 messages=messages
             )
-            messages.append(second_response.choices[0].message)
-            return second_response.choices[0].message
+            print(response_after_calls)
+            messages.append(response_after_calls.choices[0].message)
+            response_message = response_after_calls.choices[0].message
 
-        else:
-            return response_message
+        return response_message
     except Exception as e:
         print("Unable to generate ChatCompletion response")
         print(f"Exception: {e}")
         return e
+
 
 def pretty_print_conversation(messages):
     role_to_color = {
@@ -64,7 +78,7 @@ def pretty_print_conversation(messages):
         "assistant": "blue",
         "function": "magenta",
     }
-    
+
     for message in messages:
         try:
             role = message.role
@@ -92,8 +106,8 @@ def pretty_print_conversation(messages):
             elif role == "function":
                 print(colored(f"function ({message['name']}): {message['content']}\n", role_to_color[role]))
 
-messages.append({"role": "user", "content": "Add blueberries to my ShopRite cart"})
-chat_response = chat_completion_request(
-    messages, tools=shoprite_tools
-)
-pretty_print_conversation(messages)
+# messages.append({"role": "user", "content": "Add blueberries to my ShopRite cart"})
+# chat_response = chat_completion_request(
+#     messages, tools=shoprite_tools
+# )
+# pretty_print_conversation(messages)

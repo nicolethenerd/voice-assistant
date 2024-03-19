@@ -8,7 +8,6 @@ import pvporcupine
 import pvcobra
 import whisper
 from pvrecorder import PvRecorder
-import torch
 from openai import OpenAI
 from speech import stream_to_speakers
 from chat import messages, chat_completion_request, pretty_print_conversation
