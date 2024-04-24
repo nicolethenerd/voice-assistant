@@ -11,7 +11,8 @@ from pvrecorder import PvRecorder
 from openai import OpenAI
 from speech import stream_to_speakers
 from chat import messages, chat_completion_request, pretty_print_conversation
-from shoprite import shoprite_tools
+# from shoprite import shoprite_tools
+from target import target_tools
 
 load_dotenv()
 
@@ -119,9 +120,14 @@ try:
                 recoder.stop()
 
                 messages.append({"role": "user", "content": transcriber.transcribe(samples)})
-                completion = chat_completion_request(messages, tools=shoprite_tools)
-                stream_to_speakers(client, completion.content)
-                print(completion.content)
+                # completion = chat_completion_request(messages, tools=shoprite_tools)
+                completion = chat_completion_request(messages, tools=target_tools)
+                try:
+                    print(completion)
+                    print(completion.content)
+                    stream_to_speakers(client, completion.content)
+                except Exception as e:
+                    print(f"Exception: {e}")
 
                 # for line in content.splitlines():
                 #     if (line.startswith("API_CALL")):

@@ -1,7 +1,7 @@
 import requests
 import json
 
-bearer_token = "66E7B62AB77E2DC459105C809DFFC8C7F165C0036FD09AF4BDBA8323DC30B510"
+bearer_token = "416ECC31007D1AEEAE73712807D5FA292F412D60399F17F15E28051451FE6C9A"
 
 request_headers = {
     'authority': 'storefrontgateway.brands.wakefern.com',
@@ -170,7 +170,10 @@ shoprite_functions = {
 }
 
 
-def call_shoprite_function_by_name(function_called, function_args):
-    function_to_call = shoprite_functions[function_called]
+def call_shoprite_function_by_name(function_name, function_args):
+    function_to_call = shoprite_functions[function_name]
 
-    return function_to_call(*list(function_args.values()))
+    try:
+      return function_to_call(*list(function_args.values()))
+    except Exception as e:
+      return "Failed to call function " + function_name

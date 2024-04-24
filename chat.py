@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from shoprite import call_shoprite_function_by_name
+from target import call_target_function_by_name
 from termcolor import colored
 import json
 
@@ -46,7 +47,8 @@ def chat_completion_request(messages, tools=None, tool_choice=None, model=GPT_MO
                 # Extracting the arguments
                 function_args = json.loads(tool_call.function.arguments)
 
-                function_response = call_shoprite_function_by_name(function_name, function_args)
+                # function_response = call_shoprite_function_by_name(function_name, function_args)
+                function_response = call_target_function_by_name(function_name, function_args)
 
                 messages.append(
                     {
